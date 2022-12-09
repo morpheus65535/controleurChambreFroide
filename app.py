@@ -3,14 +3,12 @@
 from flask import Flask, render_template
 from waitress import serve
 from datetime import datetime, timedelta
-import os
+from json import dumps
 
 from database import init_db, TempLog
 from scheduler import scheduler
 from config import settings
 from weather import forecast
-if 'NO_SENSOR' not in os.environ:
-    from sensor import interior_temperature
 
 init_db()
 scheduler.start()
@@ -25,7 +23,7 @@ app = Flask(__name__)
 def main():
     temps = TempLog.select(TempLog.timestamp.alias('Date'),
                            TempLog.temperature_ext.alias('TemperatureExt'),
-                           (TempLog.temperature_ext + 1).alias('TemperatureInt'),
+                           TempLog.temperature_int.alias('TemperatureInt'),
                            TempLog.temp_low,
                            TempLog.temp_high)\
         .where(TempLog.timestamp > (datetime.now() - timedelta(days=7)))\
@@ -37,13 +35,7 @@ def main():
     if forecasted_temps:
         forecasted_temps.insert(0, {'Date': temps[-1]['Date'], 'Temperature': temps[-1]['TemperatureExt']})
 
-    if 'NO_SENSOR' not in os.environ:
-        interior_temp = interior_temperature.temperature
-    else:
-        interior_temp = []
-
-    return render_template('index.html', settings=settings, ext_data=list(temps), int_data=interior_temp,
-                           forecast=forecasted_temps)
+    return render_template('index.html', settings=settings, data=dumps(list(temps)), forecast=dumps(forecasted_temps))
 
 
 if __name__ == '__main__':

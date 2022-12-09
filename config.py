@@ -12,7 +12,12 @@ defaults = {
     },
 }
 
-settings_file = os.path.join(os.path.dirname(__file__), 'config', 'config.ini')
+app_dir = os.path.dirname(__file__)
+config_dir = os.path.join(app_dir, "config")
+if not os.path.isdir(config_dir):
+    os.mkdir(config_dir)
+
+settings_file = os.path.join(config_dir, 'config.ini')
 
 settings = ConfigParser()
 settings.read_dict(defaults)

@@ -83,16 +83,15 @@
 
     $('.menu .item').tab();
 
-    let ext_data = {{ ext_data | safe }};
-    let int_data = {{ int_data | safe }};
-    let forecast = {{ forecast | safe }};
+    let data = JSON.parse('{{ data | safe }}');
+    let forecast = JSON.parse('{{ forecast | safe }}');
 
     new Chart("mixed-chart-24h", {
         type: 'line',
         data: {
             datasets: [{
                 label: 'Temperature extérieure',
-                data: ext_data,
+                data: data,
                 parsing: {
                     yAxisKey: 'TemperatureExt'
                 },
@@ -103,7 +102,7 @@
                 spanGaps: false,
             }, {
                 label: 'Temperature intérieure',
-                data: int_data,
+                data: data,
                 parsing: {
                     yAxisKey: 'TemperatureInt'
                 },
@@ -129,7 +128,7 @@
                 spanGaps: false,
             }, {
                 label: 'Limite basse',
-                data: ext_data,
+                data: data,
                 parsing: {
                     yAxisKey: 'temp_low'
                 },
@@ -139,7 +138,7 @@
                 pointHitRadius: 0,
             }, {
                 label: 'Limite haute',
-                data: ext_data,
+                data: data,
                 parsing: {
                     yAxisKey: 'temp_high'
                 },
@@ -219,7 +218,7 @@
         data: {
             datasets: [{
                 label: 'Temperature extérieure',
-                data: ext_data,
+                data: data,
                 parsing: {
                     yAxisKey: 'TemperatureExt'
                 },
@@ -230,7 +229,7 @@
                 spanGaps: false,
             }, {
                 label: 'Temperature intérieure',
-                data: int_data,
+                data: data,
                 parsing: {
                     yAxisKey: 'TemperatureInt'
                 },
@@ -256,7 +255,7 @@
                 spanGaps: false,
             }, {
                 label: 'Limite basse',
-                data: ext_data,
+                data: data,
                 parsing: {
                     yAxisKey: 'temp_low'
                 },
@@ -266,7 +265,7 @@
                 pointHitRadius: 0,
             }, {
                 label: 'Limite haute',
-                data: ext_data,
+                data: data,
                 parsing: {
                     yAxisKey: 'temp_high'
                 },
