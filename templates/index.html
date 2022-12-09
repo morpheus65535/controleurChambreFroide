@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Contrôleur de chambre froide</title>
+
+        <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+        <meta name="mobile-web-app-capable" content="yes"/>
+        <meta name="apple-mobile-web-app-capable" content="yes"/>
+
+        <script src="static/js/jquery.min.js"></script>
+        <script src="static/js/semantic.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="static/css/semantic.min.css">
+
+        <style>
+            html {
+                overflow: hidden;
+            }
+            .ui.container {
+                padding-top: 1em;
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+            }
+            .tab.segment {
+                align-items: stretch;
+                height: 100%;
+            }
+            canvas {
+                height: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="ui container">
+            <h2 class="ui header">
+                <div class="ui grid">
+                    <div class="twelve wide column">
+                        <div class="content">
+                            Contrôleur de chambre froide
+                        </div>
+                    </div>
+                    <div class="four wide right aligned column">
+                        <button class="ui icon button" id="refresh">
+                            <i class="redo alternate icon"></i>
+                        </button>
+                    </div>
+                </div>
+            </h2>
+
+            <div class="ui top attached tabular menu">
+                <a class="active item" data-tab="24h">Graph 24h</a>
+                <a class="item" data-tab="7d">Graph 7j</a>
+                <a class="item" data-tab="settings">Réglages</a>
+            </div>
+
+            <div class="ui bottom attached active tab segment" data-tab="24h">
+                <canvas id="mixed-chart-24h"></canvas>
+            </div>
+
+            <div class="ui bottom attached tab segment" data-tab="7d">
+                <canvas id="mixed-chart-7d"></canvas>
+            </div>
+
+            <div class="ui bottom attached tab segment" data-tab="settings">
+
+            </div>
+        </div>
+    </body>
+</html>
+
+<script src="static/js/chart.umd.js"></script>
+<script src="static/js/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/2.1.0/chartjs-plugin-annotation.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+
+<script>
+    $(document).ready(function(){
+        $("#refresh").click(function(){
+            location.reload(true);
+        });
+    });
+
+    $('.menu .item').tab();
+
+    let ext_data = {{ ext_data | safe }};
+    let int_data = {{ int_data | safe }};
+    let forecast = {{ forecast | safe }};
+
+    new Chart("mixed-chart-24h", {
+        type: 'line',
+        data: {
+            datasets: [{
+                label: 'Temperature extérieure',
+                data: ext_data,
+                parsing: {
+                    yAxisKey: 'TemperatureExt'
+                },
+                tension: 0.4,
+                pointRadius: 0,
+                pointHoverRadius: 0,
+                pointHitRadius: 0,
+                spanGaps: false,
+            }, {
+                label: 'Temperature intérieure',
+                data: int_data,
+                parsing: {
+                    yAxisKey: 'TemperatureInt'
+                },
+                tension: 0.4,
+                pointRadius: 0,
+                pointHoverRadius: 0,
+                pointHitRadius: 0,
+                spanGaps: false,
+            }, {
+                label: 'Prévisions',
+                data: forecast,
+                segment: {
+                    borderDash: [6, 6],
+                },
+                parsing: {
+                    xAxisKey: 'Date',
+                    yAxisKey: 'Temperature'
+                },
+                tension: 0.2,
+                pointRadius: 0,
+                pointHoverRadius: 0,
+                pointHitRadius: 0,
+                spanGaps: false,
+            }, {
+                label: 'Limite basse',
+                data: ext_data,
+                parsing: {
+                    yAxisKey: 'temp_low'
+                },
+                showLine: false,
+                pointRadius: 0,
+                pointHoverRadius: 0,
+                pointHitRadius: 0,
+            }, {
+                label: 'Limite haute',
+                data: ext_data,
+                parsing: {
+                    yAxisKey: 'temp_high'
+                },
+                fill: '-1',
+                showLine: false,
+                pointRadius: 0,
+                pointHoverRadius: 0,
+                pointHitRadius: 0,
+            }],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            locale: 'fr-CA',
+            parsing: {
+                xAxisKey: 'Date',
+                yAxisKey: 'Temperature'
+            },
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'hour',
+                        displayFormats: {
+                            hour: 'HH:mm'
+                        }
+                    },
+                    min: moment().subtract(24, 'hours').toISOString(),
+                    max: moment().add(12, 'hours').toISOString(),
+                },
+                y: {
+                    suggestedMin: -10,
+                    suggestedMax: 10,
+                    ticks: {
+                        callback: function(value) {
+                            return value + 'c';
+                        },
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        filter: item => {
+                            let excluded_labels = ["Limite basse", "Limite haute"];
+                            return !excluded_labels.includes(item.text)
+                        }
+                    },
+                    onClick: null
+                },
+                annotation: {
+                    annotations: [
+                        {
+                            type: "line",
+                            scaleID: "x",
+                            value: forecast[0]['Date'],
+                            label: {
+                                backgroundColor: 'grey',
+                                content: 'Maintenant',
+                                display: true,
+                                position: 'end'
+                            }
+                        }, {
+                            type: "line",
+                            scaleID: "y",
+                            value: 0,
+                            borderColor: 'red'
+                        }
+                    ]
+                }
+            },
+        }
+    });
+
+    new Chart("mixed-chart-7d", {
+        type: 'line',
+        data: {
+            datasets: [{
+                label: 'Temperature extérieure',
+                data: ext_data,
+                parsing: {
+                    yAxisKey: 'TemperatureExt'
+                },
+                tension: 0.8,
+                pointRadius: 0,
+                pointHoverRadius: 0,
+                pointHitRadius: 0,
+                spanGaps: false,
+            }, {
+                label: 'Temperature intérieure',
+                data: int_data,
+                parsing: {
+                    yAxisKey: 'TemperatureInt'
+                },
+                tension: 0.8,
+                pointRadius: 0,
+                pointHoverRadius: 0,
+                pointHitRadius: 0,
+                spanGaps: false,
+            }, {
+                label: 'Prévisions',
+                data: forecast,
+                segment: {
+                    borderDash: [6, 6],
+                },
+                parsing: {
+                    xAxisKey: 'Date',
+                    yAxisKey: 'Temperature'
+                },
+                tension: 0.2,
+                pointRadius: 0,
+                pointHoverRadius: 0,
+                pointHitRadius: 0,
+                spanGaps: false,
+            }, {
+                label: 'Limite basse',
+                data: ext_data,
+                parsing: {
+                    yAxisKey: 'temp_low'
+                },
+                showLine: false,
+                pointRadius: 0,
+                pointHoverRadius: 0,
+                pointHitRadius: 0,
+            }, {
+                label: 'Limite haute',
+                data: ext_data,
+                parsing: {
+                    yAxisKey: 'temp_high'
+                },
+                fill: '-1',
+                showLine: false,
+                pointRadius: 0,
+                pointHoverRadius: 0,
+                pointHitRadius: 0,
+            }],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            locale: 'fr-CA',
+            parsing: {
+                xAxisKey: 'Date',
+                yAxisKey: 'Temperature'
+            },
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'day',
+                        displayFormats: {
+                            hour: 'HH:mm'
+                        }
+                    },
+                    min: moment().subtract(7, 'days').toISOString(),
+                    max: moment().add(1, 'days').toISOString(),
+                },
+                y: {
+                    suggestedMin: -10,
+                    suggestedMax: 10,
+                    ticks: {
+                        callback: function(value) {
+                            return value + 'c';
+                        },
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        filter: item => {
+                            let excluded_labels = ["Limite basse", "Limite haute"];
+                            return !excluded_labels.includes(item.text)
+                        }
+                    },
+                    onClick: null
+                },
+                annotation: {
+                    annotations: [
+                        {
+                            type: "line",
+                            scaleID: "x",
+                            value: forecast[0]['Date'],
+                            label: {
+                                backgroundColor: 'grey',
+                                content: 'Maintenant',
+                                display: true,
+                                position: 'end'
+                            }
+                        }, {
+                            type: "line",
+                            scaleID: "y",
+                            value: 0,
+                            borderColor: 'red'
+                        }
+                    ]
+                }
+            }
+        }
+    });
+</script>

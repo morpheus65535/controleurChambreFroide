@@ -1,0 +1,7 @@
+Flask
+pyOWM
+peewee
+apscheduler
+waitress
+w1thermsensor
+RPi.GPIO
