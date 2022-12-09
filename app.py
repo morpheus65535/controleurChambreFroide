@@ -26,16 +26,17 @@ def main():
                            TempLog.temperature_int.alias('TemperatureInt'),
                            TempLog.temp_low,
                            TempLog.temp_high)\
-        .where(TempLog.timestamp > (datetime.now() - timedelta(days=7)))\
         .dicts()
     for item in temps:
         item['Date'] = item['Date'].isoformat()
+
+    temps = list(temps)
 
     forecasted_temps = forecast.forecast
     if forecasted_temps:
         forecasted_temps.insert(0, {'Date': temps[-1]['Date'], 'Temperature': temps[-1]['TemperatureExt']})
 
-    return render_template('index.html', settings=settings, data=dumps(list(temps)), forecast=dumps(forecasted_temps))
+    return render_template('index.html', settings=settings, data=dumps(temps), forecast=dumps(forecasted_temps))
 
 
 if __name__ == '__main__':

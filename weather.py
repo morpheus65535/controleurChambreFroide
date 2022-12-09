@@ -4,7 +4,7 @@ import os
 
 from pyowm import OWM
 from pyowm.commons.enums import SubscriptionTypeEnum
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from database import TempLog
 from config import settings
@@ -48,6 +48,7 @@ def log_current_temp():
                     TempLog.timestamp: datetime.now().timestamp(),
                     TempLog.temp_low: settings['general']['temp_low'],
                     TempLog.temp_high: settings['general']['temp_high']}).execute()
+    TempLog.delete().where(TempLog.timestamp < (datetime.now() - timedelta(days=7))).execute()
 
 
 class Forecast:
