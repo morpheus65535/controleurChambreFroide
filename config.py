@@ -14,8 +14,7 @@ defaults = {
 
 app_dir = os.path.dirname(__file__)
 config_dir = os.path.join(app_dir, "config")
-if not os.path.isdir(config_dir):
-    os.mkdir(config_dir)
+os.makedirs(config_dir, exist_ok=True)
 
 settings_file = os.path.join(config_dir, 'config.ini')
 

@@ -6,7 +6,11 @@ import os
 from peewee import Model, FloatField, TimestampField, IntegerField
 from playhouse.sqliteq import SqliteQueueDatabase
 
-# database = SqliteQueueDatabase('file::memory:?cache=shared',
+# create config directories structure
+app_dir = os.path.dirname(__file__)
+db_dir = os.path.join(app_dir, "config", "db")
+os.makedirs(db_dir, exist_ok=True)
+
 database = SqliteQueueDatabase(os.path.join(os.path.dirname(__file__), "config", "db", "temperatures.db"),
                                use_gevent=False,
                                autostart=True,
@@ -36,11 +40,4 @@ class TempLog(BaseModel):
 
 
 def init_db():
-    app_dir = os.path.dirname(__file__)
-    config_dir = os.path.join(app_dir, "config")
-    db_dir = os.path.join(app_dir, "config", "db")
-    if not os.path.isdir(config_dir):
-        os.mkdir(config_dir)
-    if not os.path.isdir(db_dir):
-        os.mkdir(db_dir)
     database.create_tables([TempLog])
