@@ -25,6 +25,8 @@ settings.read(settings_file)
 
 
 def save_settings(data):
+    from scheduler import scheduler
+
     settings['general']['enabled'] = str(data['enabled'])
     settings['general']['owm_apikey'] = str(data['owm_apikey'])
     settings['general']['owm_location'] = str(data['owm_location'])
@@ -32,3 +34,6 @@ def save_settings(data):
     settings['general']['temp_high'] = str(data['temp_high'])
     with open(settings_file, 'w') as configfile:
         settings.write(configfile)
+
+    if settings.get('general', 'owm_apikey') != '' and settings.get('general', 'owm_location') != '':
+        scheduler.start()

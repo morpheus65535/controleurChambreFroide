@@ -11,10 +11,8 @@ from weather import forecast
 from config import save_settings
 
 init_db()
-scheduler.start()
-
-# generate first temperature logging to show data in graphs ASAP
-scheduler.run_once()
+if settings.get('general', 'owm_apikey') != '' and settings.get('general', 'owm_location') != '':
+    scheduler.start()
 
 app = Flask(__name__)
 
@@ -35,8 +33,7 @@ def main():
         item['Date'] = item['Date'].isoformat()
 
     forecasted_temps = forecast.forecast
-    if forecasted_temps:
-        forecasted_temps.insert(0, {'Date': temps[-1]['Date'], 'Temperature': temps[-1]['TemperatureExt']})
+    forecasted_temps.insert(0, {'Date': temps[-1]['Date'], 'Temperature': temps[-1]['TemperatureExt']})
 
     return render_template('index.html', settings=settings, data=dumps(temps), forecast=dumps(forecasted_temps),
                            state=state)

@@ -27,6 +27,7 @@ class Scheduler:
 
     def start(self):
         self.aps_scheduler.start()
+        self.run_once()
 
     @staticmethod
     def run_once():

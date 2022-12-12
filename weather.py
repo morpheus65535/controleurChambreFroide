@@ -29,11 +29,10 @@ CONFIG = {
     }
 }
 
-owm = OWM(settings['general']['owm_apikey'], config=CONFIG)
-mgr = owm.weather_manager()
-
 
 def get_current_temp():
+    owm = OWM(settings['general']['owm_apikey'], config=CONFIG)
+    mgr = owm.weather_manager()
     observation = mgr.weather_at_place(settings['general']['owm_location'])
     w = observation.weather
     return w.temperature('celsius')['temp']
@@ -62,9 +61,11 @@ def log_current_temp():
 
 class Forecast:
     def __init__(self):
-        self.forecast = None
+        self.forecast = []
 
     def update_forecast(self):
+        owm = OWM(settings['general']['owm_apikey'], config=CONFIG)
+        mgr = owm.weather_manager()
         weathers = mgr.forecast_at_place(settings['general']['owm_location'], '3h', limit=9).forecast
         self.forecast = [{'Date': datetime.fromtimestamp(x.ref_time).isoformat(),
                           'Temperature': x.temperature('celsius')['temp']} for x in weathers]
