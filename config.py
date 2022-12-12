@@ -5,8 +5,9 @@ import os
 
 defaults = {
     'general': {
-        'omw_apikey': '9e3ca47ce24cffe6c489db8b5f4be84f',
-        'omw_location': 'Beauport, Quebec, CA',
+        'enabled': 'True',
+        'owm_apikey': '',
+        'owm_location': '',
         'temp_low': '4',
         'temp_high': '6',
     },
@@ -25,5 +26,9 @@ settings.read(settings_file)
 
 def save_settings(data):
     settings['general']['enabled'] = str(data['enabled'])
+    settings['general']['owm_apikey'] = str(data['owm_apikey'])
+    settings['general']['owm_location'] = str(data['owm_location'])
+    settings['general']['temp_low'] = str(data['temp_low'])
+    settings['general']['temp_high'] = str(data['temp_high'])
     with open(settings_file, 'w') as configfile:
         settings.write(configfile)

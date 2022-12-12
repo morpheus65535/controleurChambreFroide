@@ -17,4 +17,8 @@ class Relay:
         GPIO.cleanup(self.pin)
 
     def get_state(self):
-        return GPIO.input(self.pin)
+        return False
+        # return GPIO.input(self.pin)
+
+
+relay = Relay()

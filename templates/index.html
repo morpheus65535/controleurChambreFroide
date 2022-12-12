@@ -63,7 +63,47 @@
             </div>
 
             <div class="ui bottom attached tab segment" data-tab="settings">
+                <div class="ui grid container">
+                    <form class="ui form">
+                        <div class="field">
+                            <label for="enabled">Contrôle de la ventilation</label>
+                            <div class="ui right aligned toggle checkbox" id="enabled">
+                                <input type="checkbox" name="enabled" id="enabled_input">
+                            </div>
+                        </div>
 
+                        <div class="ui fitted divider"></div><br>
+
+                        <div class="field">
+                            <div class="field">
+                                <label for="omw_apikey">OWM API key</label>
+                                <div class="ui input" id="omw_apikey">
+                                    <input type="text" id="omw_apikey_input" value="{{ settings.get('general', 'owm_apikey') }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <div class="field">
+                                <label for="owm_location">Emplacement</label>
+                                <div class="ui input" id="owm_location">
+                                    <input type="text" id="owm_location_input" value="{{ settings.get('general', 'owm_location') }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="ui fitted divider"></div><br>
+
+                        <div class="field">
+                            <label for="temp_range">Plage de température souhaitée</label>
+                            <div class="ui bottom aligned labeled ticked range slider" id="temp_range"></div>
+                        </div><br>
+
+                        <button class="ui right floated primary button" id="save_form">
+                            Save settings
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </body>
@@ -83,35 +123,56 @@
 
     $('.menu .item').tab();
 
+    $('.ui.checkbox').checkbox();
+
+    $('.ui.range.slider')
+        .slider({
+            min: 0,
+            max: 20,
+            start: {{ settings.get('general', 'temp_low') }},
+            end: {{ settings.get('general', 'temp_high') }},
+            step: 1
+        })
+    ;
+
+    if ( "{{ settings.getboolean('general', 'enabled') }}" === "True" ) {
+        $("#enabled").checkbox('check');
+    }
+
     let data = JSON.parse('{{ data | safe }}');
     let forecast = JSON.parse('{{ forecast | safe }}');
 
     new Chart("mixed-chart-24h", {
-        type: 'line',
+        type: 'mixed',
         data: {
             datasets: [{
+                type: 'line',
                 label: 'Temperature extérieure',
                 data: data,
                 parsing: {
                     yAxisKey: 'TemperatureExt'
                 },
+                borderColor: "rgba(0, 0, 255, 1.0)",
                 tension: 0.4,
                 pointRadius: 0,
                 pointHoverRadius: 0,
                 pointHitRadius: 0,
                 spanGaps: false,
             }, {
+                type: 'line',
                 label: 'Temperature intérieure',
                 data: data,
                 parsing: {
                     yAxisKey: 'TemperatureInt'
                 },
+                borderColor: "rgba(255, 153, 51, 1.0)",
                 tension: 0.4,
                 pointRadius: 0,
                 pointHoverRadius: 0,
                 pointHitRadius: 0,
                 spanGaps: false,
             }, {
+                type: 'line',
                 label: 'Prévisions',
                 data: forecast,
                 segment: {
@@ -121,12 +182,14 @@
                     xAxisKey: 'Date',
                     yAxisKey: 'Temperature'
                 },
+                borderColor: "rgba(0, 0, 255, 1.0)",
                 tension: 0.2,
                 pointRadius: 0,
                 pointHoverRadius: 0,
                 pointHitRadius: 0,
                 spanGaps: false,
             }, {
+                type: 'line',
                 label: 'Limite basse',
                 data: data,
                 parsing: {
@@ -137,12 +200,14 @@
                 pointHoverRadius: 0,
                 pointHitRadius: 0,
             }, {
+                type: 'line',
                 label: 'Limite haute',
                 data: data,
                 parsing: {
                     yAxisKey: 'temp_high'
                 },
                 fill: '-1',
+                backgroundColor: "rgba(0, 255, 0, 0.2)",
                 showLine: false,
                 pointRadius: 0,
                 pointHoverRadius: 0,
@@ -183,31 +248,44 @@
                 legend: {
                     labels: {
                         filter: item => {
-                            let excluded_labels = ["Limite basse", "Limite haute"];
+                            let excluded_labels = ["Limite basse", "Limite haute", "Prévisions"];
                             return !excluded_labels.includes(item.text)
                         }
                     },
                     onClick: null
                 },
                 annotation: {
-                    annotations: [
-                        {
+                    annotations: {
+                        maintenant: {
                             type: "line",
                             scaleID: "x",
                             value: forecast[0]['Date'],
+                            borderColor: 'black',
                             label: {
-                                backgroundColor: 'grey',
+                                backgroundColor: 'black',
                                 content: 'Maintenant',
                                 display: true,
                                 position: 'end'
                             }
-                        }, {
+                        },
+                        zero: {
                             type: "line",
                             scaleID: "y",
                             value: 0,
                             borderColor: 'red'
-                        }
-                    ]
+                        },
+                        {% for date in state %}
+                        {{loop.index}}: {
+                            type: "box",
+                            xMin: "{{ date }}",
+                            xMax: "{{ date }}",
+                            yMax: -100,
+                            yMin: 100,
+                            adjustScaleRange: false,
+                            borderColor: "rgba(255, 255, 0, 0.3)",
+                        },
+                        {% endfor %}
+                    }
                 }
             },
         }
@@ -222,6 +300,7 @@
                 parsing: {
                     yAxisKey: 'TemperatureExt'
                 },
+                borderColor: "rgba(0, 0, 255, 1.0)",
                 tension: 0.8,
                 pointRadius: 0,
                 pointHoverRadius: 0,
@@ -233,6 +312,7 @@
                 parsing: {
                     yAxisKey: 'TemperatureInt'
                 },
+                borderColor: "rgba(255, 153, 51, 1.0)",
                 tension: 0.8,
                 pointRadius: 0,
                 pointHoverRadius: 0,
@@ -248,6 +328,7 @@
                     xAxisKey: 'Date',
                     yAxisKey: 'Temperature'
                 },
+                borderColor: "rgba(0, 0, 255, 1.0)",
                 tension: 0.2,
                 pointRadius: 0,
                 pointHoverRadius: 0,
@@ -269,6 +350,7 @@
                 parsing: {
                     yAxisKey: 'temp_high'
                 },
+                backgroundColor: "rgba(0, 255, 0, 0.2)",
                 fill: '-1',
                 showLine: false,
                 pointRadius: 0,
@@ -310,15 +392,15 @@
                 legend: {
                     labels: {
                         filter: item => {
-                            let excluded_labels = ["Limite basse", "Limite haute"];
+                            let excluded_labels = ["Limite basse", "Limite haute", "Prévisions"];
                             return !excluded_labels.includes(item.text)
                         }
                     },
                     onClick: null
                 },
                 annotation: {
-                    annotations: [
-                        {
+                    annotations: {
+                        maintenant: {
                             type: "line",
                             scaleID: "x",
                             value: forecast[0]['Date'],
@@ -328,15 +410,48 @@
                                 display: true,
                                 position: 'end'
                             }
-                        }, {
+                        },
+                        zero: {
                             type: "line",
                             scaleID: "y",
                             value: 0,
                             borderColor: 'red'
-                        }
-                    ]
+                        },
+                        {% for date in state %}
+                        {{loop.index}}: {
+                            type: "box",
+                            xMin: "{{ date }}",
+                            xMax: "{{ date }}",
+                            yMax: -100,
+                            yMin: 100,
+                            adjustScaleRange: false,
+                            borderColor: "rgba(255, 255, 0, 0.3)",
+                        },
+                        {% endfor %}
+                    }
                 }
             }
         }
     });
+
+    $('#save_form').on('click', function() {
+        let data = {
+            'enabled': $('#enabled').checkbox('is checked'),
+            'owm_apikey': $('#omw_apikey_input').val(),
+            'owm_location': $('#owm_location_input').val(),
+            'temp_low': $('#temp_range').slider('get thumbValue', 'first'),
+            'temp_high': $('#temp_range').slider('get thumbValue', 'second'),
+        }
+
+        $.ajax({
+            url: "{{ url_for('save_settings_to_file') }}",
+            method: 'POST',
+            dataType: 'json',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            complete: function(data) {
+                window.location.replace(data.redirect);
+            }
+        });
+    })
 </script>

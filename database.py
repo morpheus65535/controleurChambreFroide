@@ -3,8 +3,9 @@
 import atexit
 import os
 
-from peewee import Model, FloatField, TimestampField, IntegerField
+from peewee import Model, FloatField, TimestampField, IntegerField, BooleanField
 from playhouse.sqliteq import SqliteQueueDatabase
+from playhouse.migrate import SqliteMigrator, migrate
 
 # create config directories structure
 app_dir = os.path.dirname(__file__)
@@ -15,6 +16,7 @@ database = SqliteQueueDatabase(os.path.join(os.path.dirname(__file__), "config",
                                use_gevent=False,
                                autostart=True,
                                queue_max_size=64)
+migrator = SqliteMigrator(database)
 
 
 @atexit.register
@@ -33,6 +35,7 @@ class TempLog(BaseModel):
     timestamp = TimestampField()
     temp_low = IntegerField()
     temp_high = IntegerField()
+    state = BooleanField(null=True)
 
     class Meta:
         table_name = 'templog'
@@ -41,3 +44,6 @@ class TempLog(BaseModel):
 
 def init_db():
     database.create_tables([TempLog])
+    migrate(
+        migrator.add_column('templog', 'state', BooleanField(null=True)),
+    )
