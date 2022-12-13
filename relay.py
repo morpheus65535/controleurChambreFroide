@@ -5,7 +5,7 @@ class Relay:
     def __init__(self):
         self.pin = 14
 
-        GPIO.setmode(GPIO.BOARD)
+        GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.pin, GPIO.OUT, initial=False)
 
     def set_high(self):
@@ -18,8 +18,7 @@ class Relay:
         GPIO.cleanup(self.pin)
 
     def get_state(self):
-        return False
-        # return GPIO.input(self.pin)
+        return GPIO.input(self.pin)
 
 
 relay = Relay()
