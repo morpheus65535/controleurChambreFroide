@@ -59,6 +59,12 @@ def log_current_temp():
     TempLog.delete().where(TempLog.timestamp < (datetime.now() - timedelta(days=7))).execute()
 
 
+def get_latest_logged_exterior_temp():
+    last_temp = TempLog.get_or_none().orderby(TempLog.timestamp.desc())
+    if last_temp:
+        return last_temp.temperature_ext
+
+
 class Forecast:
     def __init__(self):
         self.forecast = []

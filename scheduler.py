@@ -11,6 +11,8 @@ from apscheduler.triggers.interval import IntervalTrigger
 from weather import log_current_temp, forecast
 if 'NO_SENSOR' not in os.environ:
     from sensor import interior_temperature
+if 'NO_RELAY' not in os.environ:
+    from relay import set_required_relay_state
 
 
 class Scheduler:
@@ -24,6 +26,9 @@ class Scheduler:
         if 'NO_SENSOR' not in os.environ:
             self.aps_scheduler.add_job(interior_temperature.get_temperature_int, IntervalTrigger(minutes=1),
                                        max_instances=1, id='temp_int')
+        if 'NO_RELAY' not in os.environ:
+            self.aps_scheduler.add_job(set_required_relay_state, IntervalTrigger(minutes=15),
+                                       max_instances=1, id='set_relay')
 
     def start(self):
         self.aps_scheduler.start()
@@ -35,6 +40,8 @@ class Scheduler:
         scheduler.aps_scheduler.modify_job(job_id='forecast', next_run_time=datetime.now())
         if 'NO_SENSOR' not in os.environ:
             scheduler.aps_scheduler.modify_job(job_id='temp_int', next_run_time=datetime.now())
+        if 'NO_RELAY' not in os.environ:
+            scheduler.aps_scheduler.modify_job(job_id='set_relay', next_run_time=datetime.now())
 
 
 scheduler = Scheduler()
