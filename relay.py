@@ -2,7 +2,6 @@ import RPi.GPIO as GPIO
 from time import time, sleep
 
 from config import settings
-from weather import get_latest_logged_exterior_temp
 from sensor import interior_temperature
 from database import TempLog
 
@@ -31,6 +30,8 @@ relay = Relay()
 
 
 def set_required_relay_state():
+    from weather import get_latest_logged_exterior_temp
+
     t_end = time() + 60 * 10
     while time() < t_end:
         sleep(60)
