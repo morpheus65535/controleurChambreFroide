@@ -36,7 +36,7 @@ def set_required_relay_state():
     while time() < t_end:
         sleep(60)
         if settings.getboolean('general', 'enabled'):
-            temp_int = interior_temperature.get_temperature_int()
+            temp_int = interior_temperature.temperature
             temp_ext = get_latest_logged_exterior_temp()
             temp_low = settings.getint('general', 'temp_low')
             temp_high = settings.getint('general', 'temp_high')
