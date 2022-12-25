@@ -60,7 +60,7 @@ def log_current_temp():
 
 
 def get_latest_logged_exterior_temp():
-    last_temp = TempLog.get_or_none().order_by(TempLog.timestamp.desc())
+    last_temp = TempLog.select().order_by(TempLog.timestamp.desc()).get_or_none()
     if last_temp:
         return last_temp.temperature_ext
 

@@ -67,7 +67,7 @@ def set_required_relay_state():
 
 
 def update_last_relay_state():
-    relay_state = TempLog.get_or_none().order_by(TempLog.timestamp.desc())
+    relay_state = TempLog.select().order_by(TempLog.timestamp.desc()).get_or_none()
     if relay_state:
         relay_state.state = True
         relay_state.save()
