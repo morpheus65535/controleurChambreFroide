@@ -40,7 +40,7 @@ def set_required_relay_state():
             temp_ext = get_latest_logged_exterior_temp()
             temp_low = settings.getint('general', 'temp_low')
             temp_high = settings.getint('general', 'temp_high')
-            if not any([temp_int, temp_ext, temp_low, temp_high]):
+            if not all([temp_int, temp_ext, temp_low, temp_high]):
                 continue
 
             if temp_int < temp_low:
