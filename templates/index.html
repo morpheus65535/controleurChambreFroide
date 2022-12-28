@@ -277,8 +277,8 @@
                         {% for date in state %}
                         {{loop.index}}: {
                             type: "box",
-                            xMin: "{{ date }}",
-                            xMax: "{{ date }}",
+                            xMin: "{{ date[0] }}",
+                            xMax: "{{ date[1] }}",
                             yMax: -100,
                             yMin: 100,
                             adjustScaleRange: false,

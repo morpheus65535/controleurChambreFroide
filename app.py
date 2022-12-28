@@ -27,7 +27,7 @@ def main():
                            TempLog.state)\
         .dicts()
     temps = list(temps)
-    state = [x['Date'] for x in temps if x['state']]
+    state = group_state(temps)
 
     for item in temps:
         item['Date'] = item['Date'].isoformat()
@@ -37,6 +37,28 @@ def main():
 
     return render_template('index.html', settings=settings, data=dumps(temps), forecast=dumps(forecasted_temps),
                            state=state)
+
+
+def group_state(temps):
+    grouped_list = []
+    item_to_add = []
+
+    for item in temps:
+        if item['state'] and item == temps[-1]:
+            item_to_add.append(item['Date'])
+            grouped_list.append(item_to_add)
+        elif item['state']:
+            item_to_add.append(item['Date'])
+        else:
+            if item_to_add:
+                if len(item_to_add) == 1:
+                    item_to_add += item_to_add
+                elif len(item_to_add) > 2:
+                    item_to_add = [item_to_add[0], item_to_add[-1]]
+                grouped_list.append(item_to_add)
+                item_to_add = []
+
+    return grouped_list
 
 
 @app.route('/save_settings', methods=['POST'])
