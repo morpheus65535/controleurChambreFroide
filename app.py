@@ -41,22 +41,22 @@ def main():
 
 def group_state(temps):
     grouped_list = []
-    item_to_add = []
+    item_to_add = [None, None]
 
     for item in temps:
-        if item['state'] and item == temps[-1]:
-            item_to_add.append(item['Date'])
-            grouped_list.append(item_to_add)
-        elif item['state']:
-            item_to_add.append(item['Date'])
+        if item['state']:
+            if not item_to_add[0]:
+                item_to_add[0] = item['Date']
+            else:
+                item_to_add[1] = item['Date']
         else:
-            if item_to_add:
-                if len(item_to_add) == 1:
-                    item_to_add += item_to_add
-                elif len(item_to_add) > 2:
-                    item_to_add = [item_to_add[0], item_to_add[-1]]
+            if item_to_add[0]:
+                item_to_add[1] = item['Date']
                 grouped_list.append(item_to_add)
-                item_to_add = []
+                item_to_add = [None, None]
+
+    if item_to_add not in grouped_list and item_to_add[0] and item_to_add[1]:
+        grouped_list.append(item_to_add)
 
     return grouped_list
 
