@@ -32,14 +32,13 @@ class BaseModel(Model):
 class TempLog(BaseModel):
     temperature_ext = FloatField(null=True)
     temperature_int = FloatField(null=True)
-    timestamp = TimestampField()
+    timestamp = TimestampField(primary_key=True)
     temp_low = IntegerField()
     temp_high = IntegerField()
     state = BooleanField(null=True)
 
     class Meta:
         table_name = 'templog'
-        primary_key = False
 
 
 def init_db():
