@@ -450,10 +450,7 @@
             method: 'POST',
             dataType: 'json',
             contentType: 'application/json',
-            data: JSON.stringify(data),
-            complete: function(data) {
-                window.location.replace(data.redirect);
-            }
+            data: JSON.stringify(data)
         });
     })
 </script>
